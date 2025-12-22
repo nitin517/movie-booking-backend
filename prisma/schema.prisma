@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Movie {
+  id       Int    @id @default(autoincrement())
+  name     String
+  duration Int
+  price    Int
+
+  shows Show[]
+}
+
+model Theater {
+  id   Int    @id @default(autoincrement())
+  name String
+  city String
+
+  halls Hall[]
+}
+
+model Hall {
+  id        Int    @id @default(autoincrement())
+  name      String
+  theaterId Int
+
+  theater Theater @relation(fields: [theaterId], references: [id])
+
+  seats Seat[]
+  shows Show[]
+}
+
+model Seat {
+  id         Int     @id @default(autoincrement())
+  hallId     Int
+  rowNumber  Int
+  seatNumber Int
+  isAisle    Boolean
+
+  hall Hall @relation(fields: [hallId], references: [id])
+
+  bookings Booking[]
+}
+
+model Show {
+  id        Int      @id @default(autoincrement())
+  movieId   Int
+  hallId    Int
+  startTime DateTime
+
+  movie Movie @relation(fields: [movieId], references: [id])
+
+  hall Hall @relation(fields: [hallId], references: [id])
+
+  bookings Booking[]
+}
+
+model Booking {
+  id     Int @id @default(autoincrement())
+  showId Int
+  seatId Int
+
+  show Show @relation(fields: [showId], references: [id])
+  seat Seat @relation(fields: [seatId], references: [id])
+
+  @@unique([showId, seatId])
+}
